@@ -53,6 +53,7 @@ class Venue(db.Model):
     seeking_description = db.Column(db.String)
     genres = db.relationship('Genre', secondary=venue_genres,
       backref=db.backref('venues', lazy=True))
+    #TODO: Check if this works with time moving forward...
     @aggregated('upcoming_shows', db.Column(db.Integer))
     def num_upcoming_shows(self):
         return db.func.count(Show.id)
@@ -80,6 +81,17 @@ class Artist(db.Model):
     seeking_description = db.Column(db.String)
     genres = db.relationship('Genre', secondary=artist_genres,
       backref=db.backref('artists', lazy=True))
+      #TODO: Check if this works with time moving forward...
+    @aggregated('upcoming_shows', db.Column(db.Integer))
+    def num_upcoming_shows(self):
+        return db.func.count(Show.id)
+    upcoming_shows = db.relationship('Show', 
+      primaryjoin='and_(Artist.id == Show.artist_id, cast(Show.start_time, Date) >= func.current_date())')
+    @aggregated('past_shows', db.Column(db.Integer))
+    def num_past_shows(self):
+        return db.func.count(Show.id)
+    past_shows = db.relationship('Show', 
+      primaryjoin='and_(Artist.id == Show.artist_id, cast(Show.start_time, Date) < func.current_date())')
     shows = db.relationship('Show', backref=db.backref('artist', lazy=True))
 
 class City(db.Model):
@@ -301,45 +313,6 @@ def create_artist_submission():
 def shows():
   # displays list of shows at /shows
   return render_template('pages/shows.html', shows=Show.query.all())
-  # TODO: replace with real venues data.
-  #       num_shows should be aggregated based on number of upcoming shows per venue.
-  data=[{
-    "venue_id": 1,
-    "venue_name": "The Musical Hop",
-    "artist_id": 4,
-    "artist_name": "Guns N Petals",
-    "artist_image_link": "https://images.unsplash.com/photo-1549213783-8284d0336c4f?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=300&q=80",
-    "start_time": "2019-05-21T21:30:00.000Z"
-  }, {
-    "venue_id": 3,
-    "venue_name": "Park Square Live Music & Coffee",
-    "artist_id": 5,
-    "artist_name": "Matt Quevedo",
-    "artist_image_link": "https://images.unsplash.com/photo-1495223153807-b916f75de8c5?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=334&q=80",
-    "start_time": "2019-06-15T23:00:00.000Z"
-  }, {
-    "venue_id": 3,
-    "venue_name": "Park Square Live Music & Coffee",
-    "artist_id": 6,
-    "artist_name": "The Wild Sax Band",
-    "artist_image_link": "https://images.unsplash.com/photo-1558369981-f9ca78462e61?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=794&q=80",
-    "start_time": "2035-04-01T20:00:00.000Z"
-  }, {
-    "venue_id": 3,
-    "venue_name": "Park Square Live Music & Coffee",
-    "artist_id": 6,
-    "artist_name": "The Wild Sax Band",
-    "artist_image_link": "https://images.unsplash.com/photo-1558369981-f9ca78462e61?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=794&q=80",
-    "start_time": "2035-04-08T20:00:00.000Z"
-  }, {
-    "venue_id": 3,
-    "venue_name": "Park Square Live Music & Coffee",
-    "artist_id": 6,
-    "artist_name": "The Wild Sax Band",
-    "artist_image_link": "https://images.unsplash.com/photo-1558369981-f9ca78462e61?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=794&q=80",
-    "start_time": "2035-04-15T20:00:00.000Z"
-  }]
-  return render_template('pages/shows.html', shows=data)
 
 @app.route('/shows/create')
 def create_shows():
