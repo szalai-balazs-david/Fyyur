@@ -9,6 +9,7 @@ from flask import Flask, render_template, request, Response, flash, redirect, ur
 from flask_moment import Moment
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
+from sqlalchemy_utils import aggregated
 import logging
 from logging import Formatter, FileHandler
 from flask_wtf import Form
@@ -52,6 +53,16 @@ class Venue(db.Model):
     seeking_description = db.Column(db.String)
     genres = db.relationship('Genre', secondary=venue_genres,
       backref=db.backref('venues', lazy=True))
+    @aggregated('upcoming_shows', db.Column(db.Integer))
+    def num_upcoming_shows(self):
+        return db.func.count(Show.id)
+    upcoming_shows = db.relationship('Show', 
+      primaryjoin='and_(Venue.id == Show.venue_id, cast(Show.start_time, Date) >= func.current_date())')
+    @aggregated('past_shows', db.Column(db.Integer))
+    def num_past_shows(self):
+        return db.func.count(Show.id)
+    past_shows = db.relationship('Show', 
+      primaryjoin='and_(Venue.id == Show.venue_id, cast(Show.start_time, Date) < func.current_date())')
     shows = db.relationship('Show', backref=db.backref('venue', lazy=True))
 
 class Artist(db.Model):
@@ -80,26 +91,34 @@ class City(db.Model):
     venues = db.relationship('Venue', backref='city', lazy=True)
     artists = db.relationship('Artist', backref='city', lazy=True)
 
+    #TODO: This doesn't actually solve the issue with the display...
+    def __repr__(self):
+        return f'{self.city}, {self.state}'
+
 class Genre(db.Model):
     __tablename__ = 'Genre'
 
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(120), nullable=False, unique=True)
 
+    def __repr__(self):
+        return f'{self.name}'
+
 class Show(db.Model):
     __tablename__ = 'Show'
 
     id = db.Column(db.Integer, primary_key=True)
-    time = db.Column(db.DateTime(), nullable=True)
-    venue_id = db.Column(db.Integer, db.ForeignKey('Venue.id'), nullable=True)
-    artist_id = db.Column(db.Integer, db.ForeignKey('Artist.id'), nullable=True)
+    start_time = db.Column(db.DateTime(), nullable=False)
+    venue_id = db.Column(db.Integer, db.ForeignKey('Venue.id'), nullable=False)
+    artist_id = db.Column(db.Integer, db.ForeignKey('Artist.id'), nullable=False)
 
 #----------------------------------------------------------------------------#
 # Filters.
 #----------------------------------------------------------------------------#
 
 def format_datetime(value, format='medium'):
-  date = dateutil.parser.parse(value)
+  #date = dateutil.parser.parse(value)
+  date = value
   if format == 'full':
       format="EEEE MMMM, d, y 'at' h:mma"
   elif format == 'medium':
@@ -122,30 +141,7 @@ def index():
 
 @app.route('/venues')
 def venues():
-  # TODO: replace with real venues data.
-  #       num_shows should be aggregated based on number of upcoming shows per venue.
-  data=[{
-    "city": "San Francisco",
-    "state": "CA",
-    "venues": [{
-      "id": 1,
-      "name": "The Musical Hop",
-      "num_upcoming_shows": 0,
-    }, {
-      "id": 3,
-      "name": "Park Square Live Music & Coffee",
-      "num_upcoming_shows": 1,
-    }]
-  }, {
-    "city": "New York",
-    "state": "NY",
-    "venues": [{
-      "id": 2,
-      "name": "The Dueling Pianos Bar",
-      "num_upcoming_shows": 0,
-    }]
-  }]
-  return render_template('pages/venues.html', areas=data);
+  return render_template('pages/venues.html', areas=City.query.all());
 
 @app.route('/venues/search', methods=['POST'])
 def search_venues():
@@ -166,6 +162,9 @@ def search_venues():
 def show_venue(venue_id):
   # shows the venue page with the given venue_id
   # TODO: replace with real venue data from the venues table, using venue_id
+
+  return render_template('pages/show_venue.html', venue=Venue.query.get(venue_id))
+
   data1={
     "id": 1,
     "name": "The Musical Hop",
