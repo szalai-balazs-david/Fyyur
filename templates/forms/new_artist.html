@@ -5,8 +5,16 @@
     <form method="post" class="form">
       <h3 class="form-heading">List a new artist</h3>
       <label>Name</label>
-      {{ form.name(class_ = 'form-control', placeholder='Artist name', autofocus = true) }}
-      <input type="submit" value="Create Artist" class="btn btn-primary btn-lg btn-block">
+      <div class="form-field">{{ form.name }}
+        {% if form.name.errors %}
+          <ul class="errors">
+            {% for error in form.name.errors %}
+              <li>{{ error }}</li>
+            {% endfor %}
+          </ul>
+        {% endif %}
+      </div>
+      {{ form.submit }}
     </form>
   </div>
 {% endblock %}

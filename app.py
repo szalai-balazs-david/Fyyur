@@ -9,7 +9,7 @@ from flask import render_template, request, Response, flash, redirect, url_for
 import logging
 from logging import Formatter, FileHandler
 from flask_wtf import Form
-from forms import *
+from forms import ArtistForm, VenueForm, ShowForm
 from models import *
 from config import *
 

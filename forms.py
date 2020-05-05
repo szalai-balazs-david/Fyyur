@@ -1,8 +1,8 @@
 from datetime import datetime
-from flask_wtf import FlaskForm, Form
-from wtforms import StringField, SelectField, SelectMultipleField, DateTimeField
-from wtforms.validators import DataRequired, AnyOf, URL, ValidationError, Regexp, Length
-from models import *
+from flask_wtf import FlaskForm, Form, RecaptchaField
+from wtforms import StringField, SelectField, SelectMultipleField, DateTimeField, TextField, SubmitField
+from wtforms.validators import DataRequired, AnyOf, URL, ValidationError, Regexp, Length, Email
+from models import Genre
 
 class ShowForm(FlaskForm):
     artist_id = StringField(
@@ -118,10 +118,10 @@ class VenueForm(FlaskForm):
         'facebook_link', validators=[URL()]
     )
 
-def always_invalid(form, field):
-    raise ValidationError('Invalid data.')
-
-class ArtistForm(Form):
+class ArtistForm(FlaskForm):
     name = StringField(
-        'name', validators=[DataRequired()]
+        'name', validators=[DataRequired(), Email(message='Invalid length.')]
     )
+    recaptcha = RecaptchaField()
+    submit = SubmitField('Submit')
+    
