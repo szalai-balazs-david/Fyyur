@@ -1,8 +1,24 @@
 from datetime import datetime
 from flask_wtf import FlaskForm, Form, RecaptchaField
-from wtforms import StringField, SelectField, SelectMultipleField, DateTimeField, TextField, SubmitField
+from wtforms import StringField, SelectField, SelectMultipleField, DateTimeField, TextField, SubmitField, FileField, BooleanField
 from wtforms.validators import DataRequired, AnyOf, URL, ValidationError, Regexp, Length, Email
 from models import Genre
+import phonenumbers   
+
+def validate_phone(form, field):
+    if len(field.data) > 16:
+        raise ValidationError('Invalid phone number.')
+    try:
+        input_number = phonenumbers.parse(field.data)
+        if not (phonenumbers.is_valid_number(input_number)):
+            raise ValidationError('Invalid phone number.')
+    except:
+        try:
+            input_number = phonenumbers.parse("+1"+field.data)
+            if not (phonenumbers.is_valid_number(input_number)):
+                raise ValidationError('Invalid phone number.')
+        except:
+            raise ValidationError('Invalid phone number.')
 
 class ShowForm(FlaskForm):
     artist_id = StringField(
@@ -120,8 +136,88 @@ class VenueForm(FlaskForm):
 
 class ArtistForm(FlaskForm):
     name = StringField(
-        'name', validators=[DataRequired(), Email(message='Invalid length.')]
+        'Name', validators=[DataRequired(), Length(min=3, max=255, message='Invalid length.')]
     )
-    recaptcha = RecaptchaField()
+    city = StringField(
+        'City', validators=[DataRequired()]
+    )
+    state = SelectField(
+        'State', validators=[DataRequired()],
+        choices=[
+            ('', 'Select a state'),
+            ('AL', 'AL'),
+            ('AK', 'AK'),
+            ('AZ', 'AZ'),
+            ('AR', 'AR'),
+            ('CA', 'CA'),
+            ('CO', 'CO'),
+            ('CT', 'CT'),
+            ('DE', 'DE'),
+            ('DC', 'DC'),
+            ('FL', 'FL'),
+            ('GA', 'GA'),
+            ('HI', 'HI'),
+            ('ID', 'ID'),
+            ('IL', 'IL'),
+            ('IN', 'IN'),
+            ('IA', 'IA'),
+            ('KS', 'KS'),
+            ('KY', 'KY'),
+            ('LA', 'LA'),
+            ('ME', 'ME'),
+            ('MT', 'MT'),
+            ('NE', 'NE'),
+            ('NV', 'NV'),
+            ('NH', 'NH'),
+            ('NJ', 'NJ'),
+            ('NM', 'NM'),
+            ('NY', 'NY'),
+            ('NC', 'NC'),
+            ('ND', 'ND'),
+            ('OH', 'OH'),
+            ('OK', 'OK'),
+            ('OR', 'OR'),
+            ('MD', 'MD'),
+            ('MA', 'MA'),
+            ('MI', 'MI'),
+            ('MN', 'MN'),
+            ('MS', 'MS'),
+            ('MO', 'MO'),
+            ('PA', 'PA'),
+            ('RI', 'RI'),
+            ('SC', 'SC'),
+            ('SD', 'SD'),
+            ('TN', 'TN'),
+            ('TX', 'TX'),
+            ('UT', 'UT'),
+            ('VT', 'VT'),
+            ('VA', 'VA'),
+            ('WA', 'WA'),
+            ('WV', 'WV'),
+            ('WI', 'WI'),
+            ('WY', 'WY'),
+        ]
+    )
+    phone = StringField(
+        'Phone', validators=[DataRequired(), validate_phone]
+    )
+    genres = SelectMultipleField(
+        'Genres', validators=[DataRequired()],
+        choices=[(genre.id, genre.name) for genre in Genre.query.all()]
+    )
+    image = FileField(
+        'Image', validators=[DataRequired()]
+    )
+    facebook = StringField(
+        'Facebook', validators=[URL("Provide a valid URL")]
+    )
+    website = StringField(
+        'Website', validators=[URL("Provide a valid URL")]
+    )
+    isSeeking = BooleanField(
+        'Seeking Venue'
+    )
+    seekingDesc = StringField(
+        'Description', validators=[DataRequired(), Length(max=255, message='Invalid length.')]
+    )
     submit = SubmitField('Submit')
-    

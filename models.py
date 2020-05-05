@@ -51,7 +51,6 @@ class Artist(db.Model):
     name = db.Column(db.String, nullable=False, unique=True)
     city_id = db.Column(db.Integer, db.ForeignKey('City.id'), nullable=True)
     phone = db.Column(db.String(120))
-    genres = db.Column(db.String(120))
     image_link = db.Column(db.String(500))
     facebook_link = db.Column(db.String(120))
     website = db.Column(db.String(120))
