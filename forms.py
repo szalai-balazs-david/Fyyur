@@ -199,14 +199,14 @@ class ArtistForm(FlaskForm):
         ]
     )
     phone = StringField(
-        'Phone', validators=[DataRequired(), validate_phone]
+        'Phone', validators=[validate_phone]
     )
     genres = SelectMultipleField(
         'Genres', validators=[DataRequired()],
         choices=[(genre.id, genre.name) for genre in Genre.query.all()]
     )
     image = FileField(
-        'Image', validators=[DataRequired()]
+        'Image', validators=[]
     )
     facebook = StringField(
         'Facebook', validators=[URL("Provide a valid URL")]
@@ -218,6 +218,6 @@ class ArtistForm(FlaskForm):
         'Seeking Venue'
     )
     seekingDesc = StringField(
-        'Description', validators=[DataRequired(), Length(max=255, message='Invalid length.')]
+        'Description', validators=[Length(max=255, message='Invalid length.')]
     )
     submit = SubmitField('Submit')

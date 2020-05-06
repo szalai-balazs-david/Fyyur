@@ -5,7 +5,7 @@
 import json
 import dateutil.parser
 import babel
-from flask import render_template, request, Response, flash, redirect, url_for
+from flask import render_template, request, Response, flash, redirect, url_for, jsonify
 import logging
 from logging import Formatter, FileHandler
 from flask_wtf import Form
@@ -120,16 +120,19 @@ def create_artist():
 
 @app.route('/artists/create', methods=['POST'])
 def create_artist_submission():
-  form = ArtistForm()
-  if form.validate_on_submit():
-    return redirect(url_for('index'))
-  return redirect(url_for('artists'))
+  data = request.get_json()
+  flash('Artist ' + data['name'] + ' was successfully listed!')
+  print(data)
+  return jsonify({
+    'redirect': '/artists',
+    'success': 'true',
+    'error': 'Error message'
+    })
   # called upon submitting the new artist listing form
   # TODO: insert form data as a new Venue record in the db, instead
   # TODO: modify data to be the data object returned from db insertion
 
   # on successful db insert, flash success
-  flash('Artist ' + request.form['name'] + ' was successfully listed!')
   # TODO: on unsuccessful db insert, flash an error instead.
   # e.g., flash('An error occurred. Artist ' + data.name + ' could not be listed.')
   return render_template('pages/home.html')
