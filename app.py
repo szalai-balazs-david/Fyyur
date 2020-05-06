@@ -121,12 +121,46 @@ def create_artist():
 @app.route('/artists/create', methods=['POST'])
 def create_artist_submission():
   data = request.get_json()
-  flash('Artist ' + data['name'] + ' was successfully listed!')
+  success = 'true'
+  message = ''
+  try:
+    artist = Artist()
+    artist.name = data['name']
+    artist.phone = data['phone']
+    artist.image_link = data['image']
+    artist.facebook_link = data['facebook']
+    artist.website = data['website']
+    artist.seeking_venue = data['isSeeking']
+    artist.seeking_description = data['seekingDesc']
+    # TODO: Add genres
+    # TODO: Deal with city info
+    cityID = 0
+    city_query = City.query.filter(City.state==data['state']).filter(City.city==data['city']).all()
+    if(len(city_query) > 0):
+      cityID = city_query[0].id
+    else:
+      newCity = City()
+      newCity.city = data['city']
+      newCity.state = data['state']
+      db.session.add(newCity)
+      db.session.commit()
+      cityID = newCity.id
+    artist.city_id = cityID
+    db.session.add(artist)
+    db.session.commit()
+    flash('Artist ' + data['name'] + ' was successfully listed!')
+  except Exception as e:
+    print(e)
+    db.session.rollback()
+    success = 'false'
+    message = 'Something went wrong...'
+  finally:
+    db.session.close()
   print(data)
   return jsonify({
     'redirect': '/artists',
-    'success': 'true',
-    'error': 'Error message'
+    'success': success,
+    'error': message
     })
   # called upon submitting the new artist listing form
   # TODO: insert form data as a new Venue record in the db, instead
