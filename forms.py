@@ -1,8 +1,8 @@
 from datetime import datetime
 from flask_wtf import FlaskForm, Form, RecaptchaField
-from wtforms import StringField, SelectField, SelectMultipleField, DateTimeField, TextField, SubmitField, FileField, BooleanField
+from wtforms import StringField, SelectField, SelectMultipleField, DateTimeField, TextField, SubmitField, FileField, BooleanField, IntegerField
 from wtforms.validators import DataRequired, AnyOf, URL, ValidationError, Regexp, Length, Email
-from models import Genre
+from models import Genre, Venue
 import phonenumbers   
 
 def validate_phone(form, field):
@@ -20,6 +20,14 @@ def validate_phone(form, field):
         except:
             raise ValidationError('Invalid phone number.')
 
+def validate_facebook(form, field):
+    if not 'facebook.com' in field.data:
+        raise ValidationError('Invalid facebook link.')
+
+def validate_unique_venue_name(form, field):
+    if len(Venue.query.filter(Venue.name==form.name.data).all()) > 0:
+        raise ValidationError('A Venue with this name already exists.')
+
 class ShowForm(FlaskForm):
     artist_id = StringField(
         'artist_id'
@@ -35,14 +43,15 @@ class ShowForm(FlaskForm):
 
 class VenueForm(FlaskForm):
     name = StringField(
-        'name', validators=[DataRequired()]
+        'Name', validators=[DataRequired(), Length(min=3), validate_unique_venue_name]
     )
     city = StringField(
-        'city', validators=[DataRequired()]
+        'City', validators=[DataRequired()]
     )
     state = SelectField(
-        'state', validators=[DataRequired()],
+        'State', validators=[DataRequired()],
         choices=[
+            ('', 'Select a state'),
             ('AL', 'AL'),
             ('AK', 'AK'),
             ('AZ', 'AZ'),
@@ -97,42 +106,35 @@ class VenueForm(FlaskForm):
         ]
     )
     address = StringField(
-        'address', validators=[DataRequired()]
+        'Address', validators=[DataRequired()]
     )
     phone = StringField(
-        'phone'
+        'Phone', validators=[DataRequired(), validate_phone]
     )
-    image_link = StringField(
-        'image_link'
+    image = StringField(
+        'Image', validators=[URL()]
+    )
+    facebook = StringField(
+        'Facebook', validators=[URL(), validate_facebook]
+    )
+    website = StringField(
+        'Website', validators=[]
+    )
+    isSeeking = BooleanField(
+        'Looking for Talent', validators=[]
+    )
+    seekingDescription = StringField(
+        'Seeking Description', validators=[]
     )
     genres = SelectMultipleField(
-        # TODO implement enum restriction
-        'genres', validators=[DataRequired()],
-        choices=[
-            ('Alternative', 'Alternative'),
-            ('Blues', 'Blues'),
-            ('Classical', 'Classical'),
-            ('Country', 'Country'),
-            ('Electronic', 'Electronic'),
-            ('Folk', 'Folk'),
-            ('Funk', 'Funk'),
-            ('Hip-Hop', 'Hip-Hop'),
-            ('Heavy Metal', 'Heavy Metal'),
-            ('Instrumental', 'Instrumental'),
-            ('Jazz', 'Jazz'),
-            ('Musical Theatre', 'Musical Theatre'),
-            ('Pop', 'Pop'),
-            ('Punk', 'Punk'),
-            ('R&B', 'R&B'),
-            ('Reggae', 'Reggae'),
-            ('Rock n Roll', 'Rock n Roll'),
-            ('Soul', 'Soul'),
-            ('Other', 'Other'),
-        ]
+        'Genres', validators=[DataRequired()],
+        choices=[(str(genre.id), genre.name) for genre in Genre.query.all()]
     )
-    facebook_link = StringField(
-        'facebook_link', validators=[URL()]
-    )
+    submit = SubmitField('Submit')
+
+class DeleteForm(FlaskForm):
+    id = IntegerField('ID')
+    submit = SubmitField('Delete')
 
 class ArtistForm(FlaskForm):
     name = StringField(

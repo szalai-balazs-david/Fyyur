@@ -9,9 +9,10 @@ from flask import render_template, request, Response, flash, redirect, url_for, 
 import logging
 from logging import Formatter, FileHandler
 from flask_wtf import Form
-from forms import ArtistForm, VenueForm, ShowForm
+from forms import ArtistForm, VenueForm, ShowForm, DeleteForm
 from models import *
 from config import *
+from extensions import csrf
 
 #----------------------------------------------------------------------------#
 # Filters.
@@ -42,7 +43,7 @@ def index():
 
 @app.route('/venues')
 def venues():
-  return render_template('pages/venues.html', areas=City.query.all());
+  return render_template('pages/venues.html', areas=City.query.all())
 
 @app.route('/venues/search', methods=['POST'])
 def search_venues():
@@ -56,38 +57,62 @@ def search_venues():
   
 @app.route('/venues/<int:venue_id>')
 def show_venue(venue_id):
-  # shows the venue page with the given venue_id
-  #TODO: Original version passed city and state in a different way...
-  return render_template('pages/show_venue.html', venue=Venue.query.get(venue_id))
+  return render_template('pages/show_venue.html', venue=Venue.query.get(venue_id), form=DeleteForm())
 
 #  Create Venue
 #  ----------------------------------------------------------------
 
-@app.route('/venues/create', methods=['GET'])
-def create_venue_form():
+@app.route('/venues/create', methods=['GET', 'POST'])
+def create_venue_submission():
   form = VenueForm()
+  if form.validate_on_submit():
+    try:
+      venue = Venue()
+      venue.name = form.name.data
+      cityID = 0
+      city_query = City.query.filter(City.state==form.state.data).filter(City.city==form.city.data).all()
+      if(len(city_query) > 0):
+        cityID = city_query[0].id
+      else:
+        newCity = City()
+        newCity.city = form.city.data
+        newCity.state = form.state.data
+        db.session.add(newCity)
+        db.session.commit()
+        cityID = newCity.id
+      venue.city_id = cityID
+      venue.address = form.address.data
+      venue.facebook_link = form.facebook.data
+      venue.image_link = form.image.data
+      venue.phone = form.phone.data
+      venue.seeking_talent = form.isSeeking.data
+      venue.seeking_description = form.seekingDescription.data
+      genres = []
+      for genreID in form.genres.data:
+        genres.append(Genre.query.get(int(genreID)))
+      venue.genres = genres
+      db.session.add(venue)
+      db.session.commit()
+      flash('Venue ' + venue.name + ' was successfully listed!')
+    except Exception as e:
+      flash('An error occurred: ' + e)
+    return redirect(url_for('venues'))
   return render_template('forms/new_venue.html', form=form)
 
-@app.route('/venues/create', methods=['POST'])
-def create_venue_submission():
-  # TODO: insert form data as a new Venue record in the db, instead
-  # TODO: modify data to be the data object returned from db insertion
-
-  # on successful db insert, flash success
-  flash('Venue ' + request.form['name'] + ' was successfully listed!')
-  # TODO: on unsuccessful db insert, flash an error instead.
-  # e.g., flash('An error occurred. Venue ' + data.name + ' could not be listed.')
-  # see: http://flask.pocoo.org/docs/1.0/patterns/flashing/
-  return render_template('pages/home.html')
-
-@app.route('/venues/<venue_id>', methods=['DELETE'])
-def delete_venue(venue_id):
-  # TODO: Complete this endpoint for taking a venue_id, and using
-  # SQLAlchemy ORM to delete a record. Handle cases where the session commit could fail.
-
-  # BONUS CHALLENGE: Implement a button to delete a Venue on a Venue Page, have it so that
-  # clicking that button delete it from the db then redirect the user to the homepage
-  return None
+@app.route('/venues/delete', methods=['POST'])
+def delete_venue():
+  form = DeleteForm()
+  if form.validate_on_submit():
+    try:
+      venue = Venue.query.get(form.id.data)
+      db.session.delete(venue)
+      db.session.commit()
+    except Exception as e:
+      print(e)
+      db.session.rollback()
+    finally:
+      db.session.close()
+    return redirect(url_for('index'))
 
 #  Artists
 #  ----------------------------------------------------------------
@@ -133,7 +158,6 @@ def create_artist_submission():
     artist.seeking_venue = data['isSeeking']
     artist.seeking_description = data['seekingDesc']
     # TODO: Add genres
-    # TODO: Deal with city info
     cityID = 0
     city_query = City.query.filter(City.state==data['state']).filter(City.city==data['city']).all()
     if(len(city_query) > 0):

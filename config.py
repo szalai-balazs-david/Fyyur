@@ -3,6 +3,7 @@ from flask import Flask
 from flask_moment import Moment
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
+from extensions import csrf
 
 SECRET_KEY = os.urandom(32)
 # Grabs the folder where the script runs.
@@ -24,3 +25,4 @@ moment = Moment(app)
 app.config.from_object('config')
 db = SQLAlchemy(app)
 migrate = Migrate(app, db)
+csrf.init_app(app)
