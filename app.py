@@ -128,7 +128,7 @@ def delete_venue():
 #  ----------------------------------------------------------------
 @app.route('/artists')
 def artists():
-  return render_template('pages/artists.html', artists=Artist.query.filter(City.artists.any()).all())
+  return render_template('pages/artists.html', artists=Artist.query.order_by('name').all())
 
 @app.route('/artists/search', methods=['POST'])
 def search_artists():
@@ -199,12 +199,6 @@ def delete_artist():
 @app.route('/shows')
 def shows():
   return render_template('pages/shows.html', shows=Show.query.all())
-
-@app.route('/shows/create', methods=['GET'])
-def create_shows():
-  # renders form. do not touch.
-  form = ShowForm()
-  return render_template('forms/new_show.html', form=form)
 
 @app.route('/shows/create', methods=['GET', 'POST'])
 def create_show_submission():
