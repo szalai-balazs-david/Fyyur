@@ -82,6 +82,23 @@
 	{{ form.errors }}
 	{% endif %}
 </form>
+<button id="button" class="btn btn-primary" data-id="{{ venue.id }}">Delete</button>
+<script>
+	const buttonDelete = document.getElementById('button')
+	buttonDelete.onclick = function(e){
+		console.log('event',e);
+		const id = e.target.dataset['id'];
+		fetch('/venues/' + id, {
+			method: 'DELETE'
+		})
+		.then(function(response){
+			return response.json();
+		})
+		.then(function(jsonResponse){
+			window.location.href = jsonResponse['redirect']
+		})
+	}
+</script>
 
 {% endblock %}
 

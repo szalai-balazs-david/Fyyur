@@ -111,7 +111,7 @@ def search_venues():
   
 @app.route('/venues/<int:venue_id>')
 def show_venue(venue_id):
-  return render_template('pages/show_venue.html', venue=Venue.query.get(venue_id), form=DeleteForm())
+  return render_template('pages/show_venue.html', venue=Venue.query.get(venue_id))
 
 #  Create Venue
 #  ----------------------------------------------------------------
@@ -142,20 +142,21 @@ def create_venue_submission():
     return redirect(url_for('venues'))
   return render_template('forms/new_venue.html', form=form)
 
-@app.route('/venues/delete', methods=['POST'])
-def delete_venue():
-  form = DeleteForm()
-  if form.validate_on_submit():
-    try:
-      venue = Venue.query.get(form.id.data)
-      db.session.delete(venue)
-      db.session.commit()
-    except Exception as e:
-      print(e)
-      db.session.rollback()
-    finally:
-      db.session.close()
-    return redirect(url_for('index'))
+@csrf.exempt
+@app.route('/venues/<venue_id>', methods=['DELETE'])
+def delete_venue_v2(venue_id):
+  try:
+    venue = Venue.query.get(venue_id)
+    db.session.delete(venue)
+    db.session.commit()
+  except Exception as e:
+    print(e)
+    db.session.rollback()
+  finally:
+    db.session.close()
+  return jsonify({
+    'redirect': '/venues'
+  })
 
 #  Artists
 #  ----------------------------------------------------------------
@@ -179,7 +180,7 @@ def search_artists():
 @app.route('/artists/<int:artist_id>')
 def show_artist(artist_id):
   # shows the venue page with the given venue_id
-  return render_template('pages/show_artist.html', artist=Artist.query.get(artist_id), form=DeleteForm())
+  return render_template('pages/show_artist.html', artist=Artist.query.get(artist_id))
 
 #  Create Artist
 #  ----------------------------------------------------------------
@@ -210,21 +211,21 @@ def create_artist_submission():
     return redirect(url_for('artists'))
   return render_template('forms/new_artist.html', form=form)
 
-
-@app.route('/artists/delete', methods=['POST'])
-def delete_artist():
-  form = DeleteForm()
-  if form.validate_on_submit():
-    try:
-      artist = Artist.query.get(form.id.data)
-      db.session.delete(artist)
-      db.session.commit()
-    except Exception as e:
-      print(e)
-      db.session.rollback()
-    finally:
-      db.session.close()
-    return redirect(url_for('index'))
+@csrf.exempt
+@app.route('/artists/<artist_id>', methods=['DELETE'])
+def delete_artist_v2(artist_id):
+  try:
+    artist = Artist.query.get(artist_id)
+    db.session.delete(artist)
+    db.session.commit()
+  except Exception as e:
+    print(e)
+    db.session.rollback()
+  finally:
+    db.session.close()
+  return jsonify({
+    'redirect': '/artists'
+  })
 
 #  Shows
 #  ----------------------------------------------------------------

@@ -71,14 +71,23 @@
 		{% endfor %}
 	</div>
 </section>
-<form method="POST" class="form" action="/artists/delete">
-	{{ form.hidden_tag() }}
-	{{ form.id(hidden=true, value=artist.id)}}
-	{{ form.submit(class_="btn btn-primary") }}
-	{% if form.errors %}
-	{{ form.errors }}
-	{% endif %}
-</form>
+<button id="button" class="btn btn-primary" data-id="{{ artist.id }}">Delete</button>
+<script>
+	const buttonDelete = document.getElementById('button')
+	buttonDelete.onclick = function(e){
+		console.log('event',e);
+		const id = e.target.dataset['id'];
+		fetch('/artists/' + id, {
+			method: 'DELETE'
+		})
+		.then(function(response){
+			return response.json();
+		})
+		.then(function(jsonResponse){
+			window.location.href = jsonResponse['redirect']
+		})
+	}
+</script>
 
 {% endblock %}
 
