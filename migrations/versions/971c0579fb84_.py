@@ -24,7 +24,7 @@ def upgrade():
     sa.Column('state', sa.String(length=120), nullable=True),
     sa.PrimaryKeyConstraint('id')
     )
-    op.create_table('Genre',
+    genre_table = op.create_table('Genre',
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('name', sa.String(length=120), nullable=True),
     sa.PrimaryKeyConstraint('id')
@@ -42,6 +42,29 @@ def upgrade():
     op.create_foreign_key(None, 'Venue', 'City', ['city_id'], ['id'])
     op.drop_column('Venue', 'state')
     op.drop_column('Venue', 'city')
+
+    op.bulk_insert(genre_table, [
+        {'id':1, 'name':'Alternative'},
+        {'id':2, 'name':'Blues'},
+        {'id':3, 'name':'Classical'},
+        {'id':4, 'name':'Country'},
+        {'id':5, 'name':'Electronic'},
+        {'id':6, 'name':'Folk'},
+        {'id':7, 'name':'Funk'},
+        {'id':8, 'name':'Hip-Hop'},
+        {'id':9, 'name':'Heavy Metal'},
+        {'id':10, 'name':'Instrumental'},
+        {'id':11, 'name':'Jazz'},
+        {'id':12, 'name':'Musical Theatre'},
+        {'id':13, 'name':'Pop'},
+        {'id':14, 'name':'Punk'},
+        {'id':15, 'name':'R&B'},
+        {'id':16, 'name':'Reaggae'},
+        {'id':17, 'name':'Rock n Roll'},
+        {'id':18, 'name':'Soul'},
+        {'id':19, 'name':'Other'},
+        {'id':20, 'name':'Swing'}
+    ])
     # ### end Alembic commands ###
 
 

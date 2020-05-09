@@ -21,7 +21,7 @@ from sqlalchemy import or_, and_
 def register_extensions(app):
   csrf.init_app(app)
   db.init_app(app)
-  migrate.init_app(app)
+  migrate.init_app(app, db)
   moment.init_app(app)
 
 app = Flask(__name__)
