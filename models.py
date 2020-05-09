@@ -37,12 +37,14 @@ class Venue(db.Model):
     def num_upcoming_shows(self):
         return db.func.count(Show.id)
     upcoming_shows = db.relationship('Show', 
-      primaryjoin='and_(Venue.id == Show.venue_id, cast(Show.start_time, Date) >= func.current_date())')
+      primaryjoin='and_(Venue.id == Show.venue_id, cast(Show.start_time, Date) >= func.current_date())',
+      order_by='Show.start_time')
     @aggregated('past_shows', db.Column(db.Integer))
     def num_past_shows(self):
         return db.func.count(Show.id)
     past_shows = db.relationship('Show', 
-      primaryjoin='and_(Venue.id == Show.venue_id, cast(Show.start_time, Date) < func.current_date())')
+      primaryjoin='and_(Venue.id == Show.venue_id, cast(Show.start_time, Date) < func.current_date())',
+      order_by='Show.start_time')
     shows = db.relationship('Show', cascade="delete", backref=db.backref('venue', lazy=True))
 
 class Artist(db.Model):
@@ -64,12 +66,14 @@ class Artist(db.Model):
     def num_upcoming_shows(self):
         return db.func.count(Show.id)
     upcoming_shows = db.relationship('Show', 
-      primaryjoin='and_(Artist.id == Show.artist_id, cast(Show.start_time, Date) >= func.current_date())')
+      primaryjoin='and_(Artist.id == Show.artist_id, cast(Show.start_time, Date) >= func.current_date())',
+      order_by='Show.start_time')
     @aggregated('past_shows', db.Column(db.Integer))
     def num_past_shows(self):
         return db.func.count(Show.id)
     past_shows = db.relationship('Show', 
-      primaryjoin='and_(Artist.id == Show.artist_id, cast(Show.start_time, Date) < func.current_date())')
+      primaryjoin='and_(Artist.id == Show.artist_id, cast(Show.start_time, Date) < func.current_date())',
+      order_by='Show.start_time')
     shows = db.relationship('Show', cascade="delete", backref=db.backref('artist', lazy=True))
 
 class City(db.Model):

@@ -74,14 +74,6 @@
 		{% endfor %}
 	</div>
 </section>
-<form method="POST" class="form" action="/venues/delete">
-	{{ form.hidden_tag() }}
-	{{ form.id(hidden=true, value=venue.id)}}
-	{{ form.submit(class_="btn btn-primary") }}
-	{% if form.errors %}
-	{{ form.errors }}
-	{% endif %}
-</form>
 <button id="button" class="btn btn-primary" data-id="{{ venue.id }}">Delete</button>
 <script>
 	const buttonDelete = document.getElementById('button')
