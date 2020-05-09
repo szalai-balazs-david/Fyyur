@@ -35,13 +35,13 @@ def validate_unique_artist_name(form, field):
 class ShowForm(FlaskForm):
     artist_id = SelectField(
         'Who?', validators=[DataRequired()],
-        choices=[('', 'Select an artist')] + 
-            [(str(artist.id), artist.name) for artist in Artist.query.all()]
+        choices=[('', 'Select an artist')]
+            + [(str(artist.id), artist.name) for artist in Artist.query.all()]
     )
     venue_id = SelectField(
         'Where?', validators=[DataRequired()],
-        choices=[('', 'Select a venue')] + 
-            [(str(venue.id), venue.name) for venue in Venue.query.all()]
+        choices=[('', 'Select a venue')]
+            + [(str(venue.id), venue.name) for venue in Venue.query.all()]
     )
     start_time = DateTimeField(
         'When?',
@@ -136,8 +136,8 @@ class VenueForm(FlaskForm):
         'Seeking Description', validators=[Optional(), Length(min=5, max=255)]
     )
     genres = SelectMultipleField(
-        'Genres', validators=[DataRequired()],
-        choices=[(str(genre.id), genre.name) for genre in Genre.query.all()]
+        'Genres', validators=[DataRequired()]
+        , choices=[(str(genre.id), genre.name) for genre in Genre.query.all()]
     )
     submit = SubmitField('Submit')
 
@@ -209,8 +209,8 @@ class ArtistForm(FlaskForm):
         'Phone', validators=[Optional(), validate_phone]
     )
     genres = SelectMultipleField(
-        'Genres', validators=[DataRequired()],
-        choices=[(str(genre.id), genre.name) for genre in Genre.query.all()]
+        'Genres', validators=[DataRequired()]
+        ,choices=[(str(genre.id), genre.name) for genre in Genre.query.all()]
     )
     image = StringField(
         'Image', validators=[Optional(), URL()]

@@ -1,6 +1,7 @@
 
 from sqlalchemy_utils import aggregated
 from config import *
+import datetime
 
 #----------------------------------------------------------------------------#
 # Models.
@@ -31,6 +32,7 @@ class Venue(db.Model):
     seeking_description = db.Column(db.String)
     genres = db.relationship('Genre', secondary=venue_genres,
       backref=db.backref('venues', lazy=True))
+    regitration_time = db.Column(db.DateTime, default=datetime.datetime.utcnow)
     #TODO: Check if this works with time moving forward...
     @aggregated('upcoming_shows', db.Column(db.Integer))
     def num_upcoming_shows(self):
@@ -58,6 +60,7 @@ class Artist(db.Model):
     seeking_description = db.Column(db.String)
     genres = db.relationship('Genre', secondary=artist_genres,
       backref=db.backref('artists', lazy=True))
+    regitration_time = db.Column(db.DateTime, default=datetime.datetime.utcnow)
       #TODO: Check if this works with time moving forward...
     @aggregated('upcoming_shows', db.Column(db.Integer))
     def num_upcoming_shows(self):

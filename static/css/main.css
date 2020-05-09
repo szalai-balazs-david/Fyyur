@@ -181,6 +181,13 @@ h2.monospace {
   font-size: 2.25rem;
   opacity: 0.7;
 }
+.tile-basic {
+  text-align: center;
+  padding: 15px 25px;
+  border: solid 1px #ebebeb;
+  height: 250px;
+  margin-bottom: 15px;
+}
 .shows .tile-show {
   height: 350px;
 }

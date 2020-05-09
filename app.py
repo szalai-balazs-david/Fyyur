@@ -63,7 +63,17 @@ def search_for_city(search_term, city):
 
 @app.route('/')
 def index():
-  return render_template('pages/home.html')
+  venue_query = Venue.query.limit(10)
+  artist_query = Artist.query.limit(10)
+  venues = {
+    'count': venue_query.count(),
+    'list': venue_query.all()
+  }
+  artists = {
+    'count': artist_query.count(),
+    'list': artist_query.all()
+  }
+  return render_template('pages/home.html', venues=venues, artists=artists)
 
 
 #  Venues
