@@ -33,21 +33,27 @@ def validate_unique_artist_name(form, field):
     if len(Artist.query.filter(Artist.name==form.name.data).all()) > 0:
         raise ValidationError('A Venue with this name already exists.')
 
+def validate_future_time(form, field):
+    if field.data < datetime.utcnow():
+        raise ValidationError('Can not create events for the past.')
+
 class ShowForm(FlaskForm):
     artist_id = QuerySelectField(
         'Who?', validators=[DataRequired()],
         query_factory=lambda: Artist.query.all(),
-        get_label='name'
+        get_label='name',
+        allow_blank=True
     )
     venue_id = QuerySelectField(
         'Where?', validators=[DataRequired()],
         query_factory=lambda: Venue.query.all(),
-        get_label='name'
+        get_label='name',
+        allow_blank=True
     )
     start_time = DateTimeField(
         'When?',
-        validators=[DataRequired()],
-        default= datetime.today()
+        validators=[DataRequired(), validate_future_time],
+        render_kw={"placeholder": "YYYY-MM-DD hh:mm:ss"}
     )
     submit = SubmitField('Submit')
 

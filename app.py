@@ -10,7 +10,6 @@ import logging
 from logging import Formatter, FileHandler
 from flask_wtf import Form
 from models import Artist, Venue, Genre, City, Show
-from config import *
 from forms import ArtistForm, VenueForm, ShowForm, DeleteForm
 from extensions import csrf, moment, db, migrate
 from sqlalchemy import or_, and_
@@ -240,8 +239,8 @@ def create_show_submission():
   if form.validate_on_submit():
     try:
       show = Show()
-      show.artist_id = int(form.artist_id.data)
-      show.venue_id = int(form.venue_id.data)
+      show.artist_id = form.artist_id.data.id
+      show.venue_id = form.venue_id.data.id
       show.start_time = form.start_time.data
       db.session.add(show)
       db.session.commit()
