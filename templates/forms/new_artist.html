@@ -2,7 +2,8 @@
 {% block title %}New Artist{% endblock %}
 {% block content %}
   <div class="form-wrapper">
-    <form method="post" class="form" id="create_artist_form", action="/artists/create">
+    <form method="POST" class="form" action="/artists/create">
+      {{ form.hidden_tag() }}
       <h3 class="form-heading">List a new artist <a href="{{ url_for('index') }}" title="Back to homepage"><i class="fa fa-home pull-right"></i></a></h3>
       <div class="form-group">
         <label>{{ form.name.label }}</label>
@@ -18,30 +19,29 @@
         </div>
       </div>
       <div class="form-group">
-        <label>{{ form.city.label }}</label>
-        <div class="form-field">
-          {{ form.city(class_ = 'form-control', autofocus = true) }}
-          {% if form.city.errors %}
-            <ul class="errors">
-              {% for error in form.city.errors %}
-                <li>{{ error }}</li>
-              {% endfor %}
-            </ul>
-          {% endif %}
+        <label>City & State</label>
+        <div class="form-inline">
+          <div class="form-group">
+            {{ form.city(class_ = 'form-control', autofocus = true) }}
+          </div>
+          <div class="form-group">
+            {{ form.state(class_ = 'form-control', autofocus = true) }}
+          </div>
         </div>
-      </div>
-      <div class="form-group">
-        <label>{{ form.state.label }}</label>
-        <div class="form-field">
-          {{ form.state(class_ = 'form-control', autofocus = true) }}
-          {% if form.state.errors %}
-            <ul class="errors">
-              {% for error in form.state.errors %}
-                <li>{{ error }}</li>
-              {% endfor %}
-            </ul>
-          {% endif %}
-        </div>
+        {% if form.city.errors %}
+          <ul class="errors">
+            {% for error in form.city.errors %}
+              <li>{{ error }}</li>
+            {% endfor %}
+          </ul>
+        {% endif %}
+        {% if form.state.errors %}
+          <ul class="errors">
+            {% for error in form.state.errors %}
+              <li>{{ error }}</li>
+            {% endfor %}
+          </ul>
+        {% endif %}
       </div>
       <div class="form-group">
         <label>{{ form.phone.label }}</label>
@@ -50,19 +50,6 @@
           {% if form.phone.errors %}
             <ul class="errors">
               {% for error in form.phone.errors %}
-                <li>{{ error }}</li>
-              {% endfor %}
-            </ul>
-          {% endif %}
-        </div>
-      </div>
-      <div class="form-group">
-        <label>{{ form.genres.label }}</label> (Ctrl+Click to select multiple)
-        <div class="form-field">
-          {{ form.genres(class_ = 'form-control', autofocus = true) }}
-          {% if form.genres.errors %}
-            <ul class="errors">
-              {% for error in form.genres.errors %}
                 <li>{{ error }}</li>
               {% endfor %}
             </ul>
@@ -109,6 +96,19 @@
         </div>
       </div>
       <div class="form-group">
+        <label>{{ form.genres.label }}</label> (Ctrl+Click to select multiple)
+        <div class="form-field">
+          {{ form.genres(class_ = 'form-control', autofocus = true) }}
+          {% if form.genres.errors %}
+            <ul class="errors">
+              {% for error in form.genres.errors %}
+                <li>{{ error }}</li>
+              {% endfor %}
+            </ul>
+          {% endif %}
+        </div>
+      </div>
+      <div class="form-group">
         <label>{{ form.isSeeking.label }}</label>
         <div class="form-field">
           {{ form.isSeeking(class_ = 'form-control', autofocus = true) }}
@@ -135,61 +135,9 @@
         </div>
       </div>
       {{ form.submit(class_="btn btn-primary btn-lg btn-block") }}
-      <div id="error"></div>
+      {% if form.errors %}
+      {{ form.errors }}
+      {% endif %}
     </form>
   </div>
-  <script>
-    // arguments: reference to select list
-    function getSelectedOptions(sel) {
-        var opts = '', opt;
-        // loop through options in select list
-        for (var i=0, len=sel.options.length; i<len; i++) {
-            opt = sel.options[i];
-            // check if selected
-            if ( opt.selected ) {
-                // add to array of option elements to return from this function
-                opts += opt.value + ',';
-            }
-        }
-        // return array containing references to selected option elements
-        return opts.slice(0, -1);
-    }
-
-    document.getElementById('create_artist_form').onsubmit = function(e){
-      e.preventDefault();
-      fetch('/artists/create', {
-        redirect:'follow',
-        method: 'POST',
-        body: JSON.stringify({
-          'name': document.getElementById('name').value,
-          'city': document.getElementById('city').value,
-          'state': document.getElementById('state').value,
-          'phone': document.getElementById('phone').value,
-          'genres': getSelectedOptions(document.getElementById('genres')),
-          'image': document.getElementById('image').value,
-          'facebook': document.getElementById('facebook').value,
-          'website': document.getElementById('website').value,
-          'isSeeking': document.getElementById('isSeeking').checked,
-          'seekingDesc': document.getElementById('seekingDesc').value,
-        }),
-        headers: {
-            'Content-Type': 'application/json'
-        }
-      })
-      .then(function(response){
-          return response.json();
-      })
-      .then(function (jsonResponse) { 
-        if(jsonResponse.success == 'true'){
-          document.getElementById('error').innerHTML = '';
-          window.location.href = jsonResponse.redirect;
-        }
-        else{
-          document.getElementById('error').innerHTML = jsonResponse.error;
-        }
-      })
-      .catch(function() {
-      })
-    }
-  </script>
 {% endblock %}

@@ -30,6 +30,24 @@ def format_datetime(value, format='medium'):
 app.jinja_env.filters['datetime'] = format_datetime
 
 #----------------------------------------------------------------------------#
+# Custom stuff.
+#----------------------------------------------------------------------------#
+
+def get_city_id(city, state):
+  cityID = 0
+  city_query = City.query.filter(City.state==state).filter(City.city==city).all()
+  if(len(city_query) > 0):
+    cityID = city_query[0].id
+  else:
+    newCity = City()
+    newCity.city = city
+    newCity.state = state
+    db.session.add(newCity)
+    db.session.commit()
+    cityID = newCity.id
+  return cityID
+
+#----------------------------------------------------------------------------#
 # Controllers.
 #----------------------------------------------------------------------------#
 
@@ -69,18 +87,7 @@ def create_venue_submission():
     try:
       venue = Venue()
       venue.name = form.name.data
-      cityID = 0
-      city_query = City.query.filter(City.state==form.state.data).filter(City.city==form.city.data).all()
-      if(len(city_query) > 0):
-        cityID = city_query[0].id
-      else:
-        newCity = City()
-        newCity.city = form.city.data
-        newCity.state = form.state.data
-        db.session.add(newCity)
-        db.session.commit()
-        cityID = newCity.id
-      venue.city_id = cityID
+      venue.city_id = get_city_id(form.city.data, form.state.data)
       venue.address = form.address.data
       venue.facebook_link = form.facebook.data
       venue.image_link = form.image.data
@@ -95,7 +102,7 @@ def create_venue_submission():
       db.session.commit()
       flash('Venue ' + venue.name + ' was successfully listed!')
     except Exception as e:
-      flash('An error occurred: ' + e)
+      flash('An error occurred: ' + str(e))
     return redirect(url_for('venues'))
   return render_template('forms/new_venue.html', form=form)
 
@@ -143,57 +150,31 @@ def create_artist():
   form = ArtistForm()
   return render_template('forms/new_artist.html', form=form)
 
-@app.route('/artists/create', methods=['POST'])
+@app.route('/artists/create', methods=['GET', 'POST'])
 def create_artist_submission():
-  data = request.get_json()
-  success = 'true'
-  message = ''
-  try:
-    artist = Artist()
-    artist.name = data['name']
-    artist.phone = data['phone']
-    artist.image_link = data['image']
-    artist.facebook_link = data['facebook']
-    artist.website = data['website']
-    artist.seeking_venue = data['isSeeking']
-    artist.seeking_description = data['seekingDesc']
-    # TODO: Add genres
-    cityID = 0
-    city_query = City.query.filter(City.state==data['state']).filter(City.city==data['city']).all()
-    if(len(city_query) > 0):
-      cityID = city_query[0].id
-    else:
-      newCity = City()
-      newCity.city = data['city']
-      newCity.state = data['state']
-      db.session.add(newCity)
+  form = ArtistForm()
+  if form.validate_on_submit():
+    try:
+      artist = Artist()
+      artist.name = form.name.data
+      artist.city_id = get_city_id(form.city.data, form.state.data)
+      artist.phone = form.phone.data
+      artist.image_link = form.image.data
+      artist.facebook_link = form.facebook.data
+      artist.website = form.website.data
+      artist.seeking_venue = form.isSeeking.data
+      artist.seeking_description = form.seekingDesc.data
+      genres = []
+      for genreID in form.genres.data:
+        genres.append(Genre.query.get(int(genreID)))
+      artist.genres = genres
+      db.session.add(artist)
       db.session.commit()
-      cityID = newCity.id
-    artist.city_id = cityID
-    db.session.add(artist)
-    db.session.commit()
-    flash('Artist ' + data['name'] + ' was successfully listed!')
-  except Exception as e:
-    print(e)
-    db.session.rollback()
-    success = 'false'
-    message = 'Something went wrong...'
-  finally:
-    db.session.close()
-  print(data)
-  return jsonify({
-    'redirect': '/artists',
-    'success': success,
-    'error': message
-    })
-  # called upon submitting the new artist listing form
-  # TODO: insert form data as a new Venue record in the db, instead
-  # TODO: modify data to be the data object returned from db insertion
-
-  # on successful db insert, flash success
-  # TODO: on unsuccessful db insert, flash an error instead.
-  # e.g., flash('An error occurred. Artist ' + data.name + ' could not be listed.')
-  return render_template('pages/home.html')
+      flash('Artist ' + artist.name + ' was successfully listed!')
+    except Exception as e:
+      flash('An error occurred: ' + str(e))
+    return redirect(url_for('artists'))
+  return render_template('forms/new_artist.html', form=form)
 
 
 #  Shows

@@ -1,9 +1,9 @@
 from datetime import datetime
-from flask_wtf import FlaskForm, Form, RecaptchaField
+from flask_wtf import FlaskForm
 from wtforms import StringField, SelectField, SelectMultipleField, DateTimeField, TextField, SubmitField, FileField, BooleanField, IntegerField
-from wtforms.validators import DataRequired, AnyOf, URL, ValidationError, Regexp, Length, Email
-from models import Genre, Venue
-import phonenumbers   
+from wtforms.validators import DataRequired, AnyOf, URL, ValidationError, Regexp, Length, Email, Optional
+from models import Genre, Venue, Artist
+import phonenumbers
 
 def validate_phone(form, field):
     if len(field.data) > 16:
@@ -26,6 +26,10 @@ def validate_facebook(form, field):
 
 def validate_unique_venue_name(form, field):
     if len(Venue.query.filter(Venue.name==form.name.data).all()) > 0:
+        raise ValidationError('A Venue with this name already exists.')
+
+def validate_unique_artist_name(form, field):
+    if len(Artist.query.filter(Artist.name==form.name.data).all()) > 0:
         raise ValidationError('A Venue with this name already exists.')
 
 class ShowForm(FlaskForm):
@@ -118,7 +122,7 @@ class VenueForm(FlaskForm):
         'Facebook', validators=[URL(), validate_facebook]
     )
     website = StringField(
-        'Website', validators=[]
+        'Website', validators=[URL()]
     )
     isSeeking = BooleanField(
         'Looking for Talent', validators=[]
@@ -132,13 +136,9 @@ class VenueForm(FlaskForm):
     )
     submit = SubmitField('Submit')
 
-class DeleteForm(FlaskForm):
-    id = IntegerField('ID')
-    submit = SubmitField('Delete')
-
 class ArtistForm(FlaskForm):
     name = StringField(
-        'Name', validators=[DataRequired(), Length(min=3, max=255, message='Invalid length.')]
+        'Name', validators=[DataRequired(), validate_unique_artist_name]
     )
     city = StringField(
         'City', validators=[DataRequired()]
@@ -201,25 +201,29 @@ class ArtistForm(FlaskForm):
         ]
     )
     phone = StringField(
-        'Phone', validators=[validate_phone]
+        'Phone', validators=[Optional(), validate_phone]
     )
     genres = SelectMultipleField(
         'Genres', validators=[DataRequired()],
-        choices=[(genre.id, genre.name) for genre in Genre.query.all()]
+        choices=[(str(genre.id), genre.name) for genre in Genre.query.all()]
     )
-    image = FileField(
-        'Image', validators=[]
+    image = StringField(
+        'Image', validators=[Optional(), URL()]
     )
     facebook = StringField(
-        'Facebook', validators=[URL("Provide a valid URL")]
+        'Facebook', validators=[Optional(), URL(), validate_facebook]
     )
     website = StringField(
-        'Website', validators=[URL("Provide a valid URL")]
+        'Website', validators=[Optional(), URL()]
     )
     isSeeking = BooleanField(
         'Seeking Venue'
     )
     seekingDesc = StringField(
-        'Description', validators=[Length(max=255, message='Invalid length.')]
+        'Seeking Description', validators=[Length(max=255, message='Invalid length.')]
     )
     submit = SubmitField('Submit')
+
+class DeleteForm(FlaskForm):
+    id = IntegerField('ID')
+    submit = SubmitField('Delete')
