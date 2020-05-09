@@ -103,6 +103,9 @@ def create_venue_submission():
       flash('Venue ' + venue.name + ' was successfully listed!')
     except Exception as e:
       flash('An error occurred: ' + str(e))
+      db.session.rollback()
+    finally:
+      db.session.close()
     return redirect(url_for('venues'))
   return render_template('forms/new_venue.html', form=form)
 
@@ -140,15 +143,10 @@ def search_artists():
 @app.route('/artists/<int:artist_id>')
 def show_artist(artist_id):
   # shows the venue page with the given venue_id
-  return render_template('pages/show_artist.html', artist=Artist.query.get(artist_id))
+  return render_template('pages/show_artist.html', artist=Artist.query.get(artist_id), form=DeleteForm())
 
 #  Create Artist
 #  ----------------------------------------------------------------
-
-@app.route('/artists/create', methods=['GET'])
-def create_artist():
-  form = ArtistForm()
-  return render_template('forms/new_artist.html', form=form)
 
 @app.route('/artists/create', methods=['GET', 'POST'])
 def create_artist_submission():
@@ -173,9 +171,27 @@ def create_artist_submission():
       flash('Artist ' + artist.name + ' was successfully listed!')
     except Exception as e:
       flash('An error occurred: ' + str(e))
+      db.session.rollback()
+    finally:
+      db.session.close()
     return redirect(url_for('artists'))
   return render_template('forms/new_artist.html', form=form)
 
+
+@app.route('/artists/delete', methods=['POST'])
+def delete_artist():
+  form = DeleteForm()
+  if form.validate_on_submit():
+    try:
+      artist = Artist.query.get(form.id.data)
+      db.session.delete(artist)
+      db.session.commit()
+    except Exception as e:
+      print(e)
+      db.session.rollback()
+    finally:
+      db.session.close()
+    return redirect(url_for('index'))
 
 #  Shows
 #  ----------------------------------------------------------------

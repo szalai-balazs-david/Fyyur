@@ -77,7 +77,7 @@
 <form method="POST" class="form" action="/venues/delete">
 	{{ form.hidden_tag() }}
 	{{ form.id(hidden=true, value=venue.id)}}
-	{{ form.submit() }}
+	{{ form.submit(class_="btn btn-primary") }}
 	{% if form.errors %}
 	{{ form.errors }}
 </form>

@@ -116,19 +116,19 @@ class VenueForm(FlaskForm):
         'Phone', validators=[DataRequired(), validate_phone]
     )
     image = StringField(
-        'Image', validators=[URL()]
+        'Image', validators=[Optional(), URL()]
     )
     facebook = StringField(
-        'Facebook', validators=[URL(), validate_facebook]
+        'Facebook', validators=[Optional(), URL(), validate_facebook]
     )
     website = StringField(
-        'Website', validators=[URL()]
+        'Website', validators=[Optional(), URL()]
     )
     isSeeking = BooleanField(
         'Looking for Talent', validators=[]
     )
     seekingDescription = StringField(
-        'Seeking Description', validators=[]
+        'Seeking Description', validators=[Optional(), Length(min=5, max=255)]
     )
     genres = SelectMultipleField(
         'Genres', validators=[DataRequired()],
@@ -220,7 +220,7 @@ class ArtistForm(FlaskForm):
         'Seeking Venue'
     )
     seekingDesc = StringField(
-        'Seeking Description', validators=[Length(max=255, message='Invalid length.')]
+        'Seeking Description', validators=[Optional(), Length(min=5, max=255, message='Invalid length.')]
     )
     submit = SubmitField('Submit')
 
