@@ -44,7 +44,7 @@ class Venue(db.Model):
         return db.func.count(Show.id)
     past_shows = db.relationship('Show', 
       primaryjoin='and_(Venue.id == Show.venue_id, cast(Show.start_time, Date) < func.current_date())')
-    shows = db.relationship('Show', backref=db.backref('venue', lazy=True))
+    shows = db.relationship('Show', cascade="delete", backref=db.backref('venue', lazy=True))
 
 class Artist(db.Model):
     __tablename__ = 'Artist'
@@ -72,7 +72,7 @@ class Artist(db.Model):
         return db.func.count(Show.id)
     past_shows = db.relationship('Show', 
       primaryjoin='and_(Artist.id == Show.artist_id, cast(Show.start_time, Date) < func.current_date())')
-    shows = db.relationship('Show', backref=db.backref('artist', lazy=True))
+    shows = db.relationship('Show', cascade="delete", backref=db.backref('artist', lazy=True))
 
 class City(db.Model):
     __tablename__ = 'City'
