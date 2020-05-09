@@ -43,7 +43,7 @@ def index():
 
 @app.route('/venues')
 def venues():
-  return render_template('pages/venues.html', areas=City.query.all())
+  return render_template('pages/venues.html', areas=City.query.filter(City.venues.any()).all())
 
 @app.route('/venues/search', methods=['POST'])
 def search_venues():
@@ -118,7 +118,7 @@ def delete_venue():
 #  ----------------------------------------------------------------
 @app.route('/artists')
 def artists():
-  return render_template('pages/artists.html', artists=Artist.query.all())
+  return render_template('pages/artists.html', artists=Artist.query.filter(City.artists.any()).all())
 
 @app.route('/artists/search', methods=['POST'])
 def search_artists():
