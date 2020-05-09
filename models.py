@@ -1,6 +1,6 @@
 
 from sqlalchemy_utils import aggregated
-from config import *
+from extensions import db
 import datetime
 
 #----------------------------------------------------------------------------#

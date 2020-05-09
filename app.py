@@ -5,15 +5,29 @@
 import json
 import dateutil.parser
 import babel
-from flask import render_template, request, Response, flash, redirect, url_for, jsonify
+from flask import Flask, render_template, request, Response, flash, redirect, url_for, jsonify
 import logging
 from logging import Formatter, FileHandler
 from flask_wtf import Form
-from forms import ArtistForm, VenueForm, ShowForm, DeleteForm
-from models import *
+from models import Artist, Venue, Genre, City, Show
 from config import *
-from extensions import csrf
+from forms import ArtistForm, VenueForm, ShowForm, DeleteForm
+from extensions import csrf, moment, db, migrate
 from sqlalchemy import or_, and_
+
+#----------------------------------------------------------------------------#
+# App Config.
+#----------------------------------------------------------------------------#
+
+def register_extensions(app):
+  csrf.init_app(app)
+  db.init_app(app)
+  migrate.init_app(app)
+  moment.init_app(app)
+
+app = Flask(__name__)
+app.config.from_object('config')
+register_extensions(app)
 
 #----------------------------------------------------------------------------#
 # Filters.
@@ -117,10 +131,7 @@ def create_venue_submission():
       venue.phone = form.phone.data
       venue.seeking_talent = form.isSeeking.data
       venue.seeking_description = form.seekingDescription.data
-      genres = []
-      for genreID in form.genres.data:
-        genres.append(Genre.query.get(int(genreID)))
-      venue.genres = genres
+      venue.genres = form.genres.data
       db.session.add(venue)
       db.session.commit()
       flash('Venue ' + venue.name + ' was successfully listed!')
@@ -188,10 +199,7 @@ def create_artist_submission():
       artist.website = form.website.data
       artist.seeking_venue = form.isSeeking.data
       artist.seeking_description = form.seekingDesc.data
-      genres = []
-      for genreID in form.genres.data:
-        genres.append(Genre.query.get(int(genreID)))
-      artist.genres = genres
+      artist.genres = form.genres.data
       db.session.add(artist)
       db.session.commit()
       flash('Artist ' + artist.name + ' was successfully listed!')

@@ -1,7 +1,8 @@
 from datetime import datetime
 from flask_wtf import FlaskForm
-from wtforms import StringField, SelectField, SelectMultipleField, DateTimeField, TextField, SubmitField, FileField, BooleanField, IntegerField
-from wtforms.validators import DataRequired, AnyOf, URL, ValidationError, Regexp, Length, Email, Optional
+from wtforms import StringField, SelectField, DateTimeField, SubmitField, BooleanField, IntegerField
+from wtforms.validators import DataRequired, URL, ValidationError, Length, Optional
+from wtforms.ext.sqlalchemy.fields import QuerySelectField, QuerySelectMultipleField
 from models import Genre, Venue, Artist
 import phonenumbers
 
@@ -33,15 +34,15 @@ def validate_unique_artist_name(form, field):
         raise ValidationError('A Venue with this name already exists.')
 
 class ShowForm(FlaskForm):
-    artist_id = SelectField(
+    artist_id = QuerySelectField(
         'Who?', validators=[DataRequired()],
-        choices=[('', 'Select an artist')]
-            + [(str(artist.id), artist.name) for artist in Artist.query.all()]
+        query_factory=lambda: Artist.query.all(),
+        get_label='name'
     )
-    venue_id = SelectField(
+    venue_id = QuerySelectField(
         'Where?', validators=[DataRequired()],
-        choices=[('', 'Select a venue')]
-            + [(str(venue.id), venue.name) for venue in Venue.query.all()]
+        query_factory=lambda: Venue.query.all(),
+        get_label='name'
     )
     start_time = DateTimeField(
         'When?',
@@ -135,9 +136,10 @@ class VenueForm(FlaskForm):
     seekingDescription = StringField(
         'Seeking Description', validators=[Optional(), Length(min=5, max=255)]
     )
-    genres = SelectMultipleField(
-        'Genres', validators=[DataRequired()]
-        , choices=[(str(genre.id), genre.name) for genre in Genre.query.all()]
+    genres = QuerySelectMultipleField(
+        'Genres', validators=[DataRequired()],
+        query_factory=lambda: Genre.query.all(),
+        get_label='name'
     )
     submit = SubmitField('Submit')
 
@@ -208,9 +210,10 @@ class ArtistForm(FlaskForm):
     phone = StringField(
         'Phone', validators=[Optional(), validate_phone]
     )
-    genres = SelectMultipleField(
-        'Genres', validators=[DataRequired()]
-        ,choices=[(str(genre.id), genre.name) for genre in Genre.query.all()]
+    genres = QuerySelectMultipleField(
+        'Genres', validators=[DataRequired()],
+        query_factory=lambda: Genre.query.all(),
+        get_label='name'
     )
     image = StringField(
         'Image', validators=[Optional(), URL()]
