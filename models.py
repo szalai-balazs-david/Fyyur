@@ -22,18 +22,17 @@ class Venue(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String, nullable=False, unique=True)
-    city_id = db.Column(db.Integer, db.ForeignKey('City.id'), nullable=True)
-    address = db.Column(db.String(120))
-    phone = db.Column(db.String(120))
-    image_link = db.Column(db.String(500))
-    facebook_link = db.Column(db.String(120))
-    website = db.Column(db.String(120))
-    seeking_talent = db.Column(db.Boolean)
-    seeking_description = db.Column(db.String)
+    city_id = db.Column(db.Integer, db.ForeignKey('City.id'), nullable=False)
+    address = db.Column(db.String(120), nullable=False)
+    phone = db.Column(db.String(120), nullable=False)
+    image_link = db.Column(db.String(500), nullable=True)
+    facebook_link = db.Column(db.String(120), nullable=True)
+    website = db.Column(db.String(120), nullable=True)
+    seeking_talent = db.Column(db.Boolean, nullable=True)
+    seeking_description = db.Column(db.String, nullable=True)
     genres = db.relationship('Genre', secondary=venue_genres,
       backref=db.backref('venues', lazy=True))
     regitration_time = db.Column(db.DateTime, default=datetime.datetime.utcnow)
-    #TODO: Check if this works with time moving forward...
     @aggregated('upcoming_shows', db.Column(db.Integer))
     def num_upcoming_shows(self):
         return db.func.count(Show.id)
@@ -51,17 +50,16 @@ class Artist(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String, nullable=False, unique=True)
-    city_id = db.Column(db.Integer, db.ForeignKey('City.id'), nullable=True)
-    phone = db.Column(db.String(120))
-    image_link = db.Column(db.String(500))
-    facebook_link = db.Column(db.String(120))
-    website = db.Column(db.String(120))
-    seeking_venue = db.Column(db.Boolean)
-    seeking_description = db.Column(db.String)
+    city_id = db.Column(db.Integer, db.ForeignKey('City.id'), nullable=False)
+    phone = db.Column(db.String(120), nullable=True)
+    image_link = db.Column(db.String(500), nullable=True)
+    facebook_link = db.Column(db.String(120), nullable=True)
+    website = db.Column(db.String(120), nullable=True)
+    seeking_venue = db.Column(db.Boolean, nullable=True)
+    seeking_description = db.Column(db.String, nullable=True)
     genres = db.relationship('Genre', secondary=artist_genres,
       backref=db.backref('artists', lazy=True))
     regitration_time = db.Column(db.DateTime, default=datetime.datetime.utcnow)
-      #TODO: Check if this works with time moving forward...
     @aggregated('upcoming_shows', db.Column(db.Integer))
     def num_upcoming_shows(self):
         return db.func.count(Show.id)
