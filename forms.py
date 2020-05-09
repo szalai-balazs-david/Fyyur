@@ -237,7 +237,3 @@ class ArtistForm(FlaskForm):
         'Seeking Description', validators=[Optional(), Length(min=5, max=255, message='Invalid length.')]
     )
     submit = SubmitField('Submit')
-
-class DeleteForm(FlaskForm):
-    id = IntegerField('ID')
-    submit = SubmitField('Delete')

@@ -10,7 +10,7 @@ import logging
 from logging import Formatter, FileHandler
 from flask_wtf import Form
 from models import Artist, Venue, Genre, City, Show
-from forms import ArtistForm, VenueForm, ShowForm, DeleteForm
+from forms import ArtistForm, VenueForm, ShowForm
 from extensions import csrf, moment, db, migrate
 from sqlalchemy import or_, and_
 
