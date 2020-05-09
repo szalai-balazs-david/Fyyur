@@ -13,7 +13,7 @@ from forms import ArtistForm, VenueForm, ShowForm, DeleteForm
 from models import *
 from config import *
 from extensions import csrf
-from sqlalchemy import or_
+from sqlalchemy import or_, and_
 
 #----------------------------------------------------------------------------#
 # Filters.
@@ -48,6 +48,15 @@ def get_city_id(city, state):
     cityID = newCity.id
   return cityID
 
+def search_for_city(search_term, city):
+  if ', ' not in search_term:
+    return False
+  city_name = search_term.split(', ')[0]
+  state_name = search_term.split(', ')[1]
+  return and_(
+    city.city.ilike('%{}%'.format(city_name)),
+    city.state.ilike('%{}%'.format(state_name)))
+
 #----------------------------------------------------------------------------#
 # Controllers.
 #----------------------------------------------------------------------------#
@@ -67,10 +76,10 @@ def venues():
 @app.route('/venues/search', methods=['POST'])
 def search_venues():
   search_term = request.form['search_term']
-  query = Venue.query.filter(
+  query = Venue.query.join(Venue.city).filter(
     or_(
       Venue.name.ilike('%{}%'.format(search_term)),
-      Venue.city.city.ilike('%{}%'.format(search_term))))
+      search_for_city(search_term, City)))
   response = {
     "count": query.count(),
     "data": query.all()
@@ -137,7 +146,10 @@ def artists():
 @app.route('/artists/search', methods=['POST'])
 def search_artists():
   search_term = request.form['search_term']
-  query = Artist.query.filter(Artist.name.ilike('%{}%'.format(search_term)))
+  query = Artist.query.join(Artist.city).filter(
+    or_(
+      Artist.name.ilike('%{}%'.format(search_term)),
+      search_for_city(search_term, City)))
   response = {
     "count": query.count(),
     "data": query.all()
