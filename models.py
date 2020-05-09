@@ -80,7 +80,6 @@ class City(db.Model):
     venues = db.relationship('Venue', backref='city', lazy=True)
     artists = db.relationship('Artist', backref='city', lazy=True)
 
-    #TODO: This doesn't actually solve the issue with the display...
     def __repr__(self):
         return f'{self.city}, {self.state}'
 

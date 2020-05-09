@@ -13,6 +13,7 @@ from forms import ArtistForm, VenueForm, ShowForm, DeleteForm
 from models import *
 from config import *
 from extensions import csrf
+from sqlalchemy import or_
 
 #----------------------------------------------------------------------------#
 # Filters.
@@ -66,7 +67,10 @@ def venues():
 @app.route('/venues/search', methods=['POST'])
 def search_venues():
   search_term = request.form['search_term']
-  query = Venue.query.filter(Venue.name.ilike('%{}%'.format(search_term)))
+  query = Venue.query.filter(
+    or_(
+      Venue.name.ilike('%{}%'.format(search_term)),
+      Venue.city.city.ilike('%{}%'.format(search_term))))
   response = {
     "count": query.count(),
     "data": query.all()
