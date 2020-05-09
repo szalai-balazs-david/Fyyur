@@ -198,26 +198,33 @@ def delete_artist():
 
 @app.route('/shows')
 def shows():
-  # displays list of shows at /shows
   return render_template('pages/shows.html', shows=Show.query.all())
 
-@app.route('/shows/create')
+@app.route('/shows/create', methods=['GET'])
 def create_shows():
   # renders form. do not touch.
   form = ShowForm()
   return render_template('forms/new_show.html', form=form)
 
-@app.route('/shows/create', methods=['POST'])
+@app.route('/shows/create', methods=['GET', 'POST'])
 def create_show_submission():
-  # called to create new shows in the db, upon submitting new show listing form
-  # TODO: insert form data as a new Show record in the db, instead
-
-  # on successful db insert, flash success
-  flash('Show was successfully listed!')
-  # TODO: on unsuccessful db insert, flash an error instead.
-  # e.g., flash('An error occurred. Show could not be listed.')
-  # see: http://flask.pocoo.org/docs/1.0/patterns/flashing/
-  return render_template('pages/home.html')
+  form = ShowForm()
+  if form.validate_on_submit():
+    try:
+      show = Show()
+      show.artist_id = int(form.artist_id.data)
+      show.venue_id = int(form.venue_id.data)
+      show.start_time = form.start_time.data
+      db.session.add(show)
+      db.session.commit()
+      flash('Show was successfully listed!')
+    except Exception as e:
+      flash('An error occurred: ' + str(e))
+      db.session.rollback()
+    finally:
+      db.session.close()
+    return redirect(url_for('shows'))
+  return render_template('forms/new_show.html', form=form)
 
 @app.errorhandler(404)
 def not_found_error(error):

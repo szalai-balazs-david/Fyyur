@@ -33,17 +33,22 @@ def validate_unique_artist_name(form, field):
         raise ValidationError('A Venue with this name already exists.')
 
 class ShowForm(FlaskForm):
-    artist_id = StringField(
-        'artist_id'
+    artist_id = SelectField(
+        'Who?', validators=[DataRequired()],
+        choices=[('', 'Select an artist')] + 
+            [(str(artist.id), artist.name) for artist in Artist.query.all()]
     )
-    venue_id = StringField(
-        'venue_id'
+    venue_id = SelectField(
+        'Where?', validators=[DataRequired()],
+        choices=[('', 'Select a venue')] + 
+            [(str(venue.id), venue.name) for venue in Venue.query.all()]
     )
     start_time = DateTimeField(
-        'start_time',
+        'When?',
         validators=[DataRequired()],
         default= datetime.today()
     )
+    submit = SubmitField('Submit')
 
 class VenueForm(FlaskForm):
     name = StringField(
